@@ -23,36 +23,36 @@ class ActivityB : AppCompatActivity() {
             val intentActivityC = Intent(this, ActivityC::class.java)
             startActivity(intentActivityC)
         }
-        Log.i("debug_activity", "${this::class.simpleName} ${hashCode().toString(16)}: onCreate")
+        Log.i("debug_activity", "${logInfo()}: onCreate")
     }
 
     override fun onResume() {
         super.onResume()
-        Log.i("debug_activity", "${this::class.simpleName} ${hashCode().toString(16)}: onResume")
+        Log.i("debug_activity", "${logInfo()}: onResume")
     }
 
     override fun onPause() {
         super.onPause()
-        Log.i("debug_activity", "${this::class.simpleName} ${hashCode().toString(16)}: onPause")
+        Log.i("debug_activity", "${logInfo()}: onPause")
     }
 
     override fun onStop() {
         super.onStop()
-        Log.i("debug_activity", "${this::class.simpleName} ${hashCode().toString(16)}: onStop")
+        Log.i("debug_activity", "${logInfo()}: onStop")
     }
 
     override fun onRestart() {
         super.onRestart()
-        Log.i("debug_activity", "${this::class.simpleName} ${hashCode().toString(16)}: onRestart")
+        Log.i("debug_activity", "${logInfo()}: onRestart")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.i("debug_activity", "${this::class.simpleName} ${hashCode().toString(16)}: onDestroy")
+        Log.i("debug_activity", "${logInfo()}: onDestroy")
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        Log.i("debug_activity", "${this::class.simpleName} ${hashCode().toString(16)}: onNewIntent")
+        Log.i("debug_activity", "${logInfo()}: onNewIntent")
     }
 }
