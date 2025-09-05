@@ -14,14 +14,16 @@
         tools:targetApi="34">
         <activity
             android:name=".ActivityD"
-            android:exported="false" />
+            android:exported="false"
+            android:taskAffinity="otus.gpb.homework.activities.ActivityBCD" />
         <activity
             android:name=".ActivityC"
-            android:exported="false" />
+            android:exported="false"
+            android:taskAffinity="otus.gpb.homework.activities.ActivityBCD" />
         <activity
             android:name=".ActivityB"
             android:exported="false"
-            android:taskAffinity="otus.gpb.homework.activities.ActivityB" />
+            android:taskAffinity="otus.gpb.homework.activities.ActivityBCD" />
         <activity
             android:name=".ActivityA"
             android:exported="true">

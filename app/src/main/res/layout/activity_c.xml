@@ -18,13 +18,23 @@
         app:layout_constraintTop_toTopOf="@+id/guideline2activity_c" />
 
     <Button
+        android:id="@+id/button_open_activity_d"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/open_activity_d"
+        app:layout_constraintEnd_toEndOf="@+id/button_open_activity_a"
+        app:layout_constraintStart_toStartOf="@+id/button_open_activity_a"
+        app:layout_constraintTop_toBottomOf="@+id/button_open_activity_a" />
+
+
+    <Button
         android:id="@+id/button_close_activity_c"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/close_activity_c"
-        app:layout_constraintEnd_toEndOf="@+id/button_open_activity_b_from_c"
-        app:layout_constraintStart_toStartOf="@+id/button_open_activity_b_from_c"
-        app:layout_constraintTop_toBottomOf="@+id/button_open_activity_b_from_c" />
+        app:layout_constraintEnd_toEndOf="@+id/button_open_activity_d"
+        app:layout_constraintStart_toStartOf="@+id/button_open_activity_d"
+        app:layout_constraintTop_toBottomOf="@+id/button_open_activity_d" />
 
     <Button
         android:id="@+id/button_close_stack"
@@ -34,15 +44,6 @@
         app:layout_constraintEnd_toEndOf="@+id/button_close_activity_c"
         app:layout_constraintStart_toStartOf="@+id/button_close_activity_c"
         app:layout_constraintTop_toBottomOf="@+id/button_close_activity_c" />
-
-    <Button
-        android:id="@+id/button_open_activity_b_from_c"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/open_activity_b"
-        app:layout_constraintEnd_toEndOf="@+id/button_open_activity_a"
-        app:layout_constraintStart_toStartOf="@+id/button_open_activity_a"
-        app:layout_constraintTop_toBottomOf="@+id/button_open_activity_a" />
 
 
     <androidx.constraintlayout.widget.Guideline

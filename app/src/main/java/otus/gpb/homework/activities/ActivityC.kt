@@ -4,14 +4,12 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-class ActivityC : AppCompatActivity() {
+class ActivityC : AbstractAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -26,8 +24,10 @@ class ActivityC : AppCompatActivity() {
             intentActivityA.addFlags(FLAG_ACTIVITY_SINGLE_TOP or FLAG_ACTIVITY_NEW_TASK)
             startActivity(intentActivityA)
         }
-        findViewById<Button>(R.id.button_open_activity_b_from_c).setOnClickListener {
-
+        findViewById<Button>(R.id.button_open_activity_d).setOnClickListener {
+            val intentActivityD = Intent(this, ActivityD::class.java)
+            finishAffinity()
+            startActivity(intentActivityD)
         }
         findViewById<Button>(R.id.button_close_activity_c).setOnClickListener {
 
@@ -35,37 +35,5 @@ class ActivityC : AppCompatActivity() {
         findViewById<Button>(R.id.button_close_stack).setOnClickListener {
 
         }
-
-        Log.i("debug_activity", "${logInfo()}: onCreate")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.i("debug_activity", "${logInfo()}: onResume")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.i("debug_activity", "${logInfo()}: onPause")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.i("debug_activity", "${logInfo()}: onStop")
-    }
-
-    override fun onRestart() {
-        super.onRestart()
-        Log.i("debug_activity", "${logInfo()}: onRestart")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.i("debug_activity", "${logInfo()}: onDestroy")
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        Log.i("debug_activity", "${logInfo()}: onNewIntent")
     }
 }

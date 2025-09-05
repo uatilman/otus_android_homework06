@@ -2,14 +2,12 @@ package otus.gpb.homework.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-class ActivityB : AppCompatActivity() {
+class ActivityB : AbstractAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -23,36 +21,5 @@ class ActivityB : AppCompatActivity() {
             val intentActivityC = Intent(this, ActivityC::class.java)
             startActivity(intentActivityC)
         }
-        Log.i("debug_activity", "${logInfo()}: onCreate")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.i("debug_activity", "${logInfo()}: onResume")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.i("debug_activity", "${logInfo()}: onPause")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.i("debug_activity", "${logInfo()}: onStop")
-    }
-
-    override fun onRestart() {
-        super.onRestart()
-        Log.i("debug_activity", "${logInfo()}: onRestart")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.i("debug_activity", "${logInfo()}: onDestroy")
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        Log.i("debug_activity", "${logInfo()}: onNewIntent")
     }
 }
