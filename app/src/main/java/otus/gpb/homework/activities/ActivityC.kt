@@ -1,6 +1,8 @@
 package otus.gpb.homework.activities
 
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -20,7 +22,9 @@ class ActivityC : AppCompatActivity() {
             insets
         }
         findViewById<Button>(R.id.button_open_activity_a).setOnClickListener {
-
+            val intentActivityA = Intent(this, ActivityA::class.java)
+            intentActivityA.addFlags(FLAG_ACTIVITY_SINGLE_TOP or FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intentActivityA)
         }
         findViewById<Button>(R.id.button_open_activity_b_from_c).setOnClickListener {
 
