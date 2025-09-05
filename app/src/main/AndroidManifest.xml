@@ -13,13 +13,15 @@
         android:theme="@style/Theme.Activities"
         tools:targetApi="34">
         <activity
+            android:name=".ActivityD"
+            android:exported="false" />
+        <activity
             android:name=".ActivityC"
             android:exported="false" />
         <activity
             android:name=".ActivityB"
             android:exported="false"
-            android:taskAffinity="otus.gpb.homework.activities.ActivityB"
-            />
+            android:taskAffinity="otus.gpb.homework.activities.ActivityB" />
         <activity
             android:name=".ActivityA"
             android:exported="true">
