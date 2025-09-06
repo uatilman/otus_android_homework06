@@ -30,7 +30,7 @@ class ActivityC : AbstractAppCompatActivity() {
             startActivity(intentActivityD)
         }
         findViewById<Button>(R.id.button_close_activity_c).setOnClickListener {
-
+            finish()
         }
         findViewById<Button>(R.id.button_close_stack).setOnClickListener {
 
