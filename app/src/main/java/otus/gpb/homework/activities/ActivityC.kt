@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.os.Bundle
+import android.os.Message
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
@@ -33,7 +34,7 @@ class ActivityC : AbstractAppCompatActivity() {
             finish()
         }
         findViewById<Button>(R.id.button_close_stack).setOnClickListener {
-
+            ActivityB.finishAndRemoveTaskHCallback.handleMessage(Message())
         }
     }
 }
