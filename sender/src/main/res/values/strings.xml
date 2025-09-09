@@ -5,4 +5,5 @@
     <string name="open_receiver">Open Receiver</string>
     <string name="no_maps_clients_installed">No maps clients installed.</string>
     <string name="no_email_clients_installed">No email clients installed.</string>
+    <string name="no_payload_clients_installed">No Payload clients installed.</string>
 </resources>
