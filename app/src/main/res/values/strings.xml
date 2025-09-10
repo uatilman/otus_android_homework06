@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Activities</string>
     <string name="title_send">Отправить</string>
+    <string name="aler_dialog_title">Выберите фото</string>
+    <string name="aler_dialog_canceled">Назад</string>
+    <string name="aler_dialog_choose_foto">Выбрать фото</string>
+    <string name="aler_dialog_create_foto">Сделать фото</string>
+    <string name="alert_dialog_ok">OK</string>
 </resources>
