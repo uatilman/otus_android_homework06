@@ -10,6 +10,7 @@ import android.provider.Settings
 import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -35,11 +36,13 @@ class EditProfileActivity : AppCompatActivity() {
         ::handleCameraPermissionAfterSettingsActivity
     )
 
-    private val launcherSettings = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult(),
-    ) { _ ->
-        Log.d("debug_granted", "Callback launcherSettings.")
-        permissionCameraAfterSettingsActivity.launch(Manifest.permission.CAMERA)
+    private val takePictureUri = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { image: Uri? ->
+        Log.d("debug_granted", "Callback takePictureUri. uri: $image")
+        image?.let {
+            populateImage(image)
+        }
     }
 
     private var currentItemsWhichChooseImageDialog = -1
@@ -144,6 +147,7 @@ class EditProfileActivity : AppCompatActivity() {
         TODO("В качестве реализации метода отправьте неявный Intent чтобы поделиться профилем. В качестве extras передайте заполненные строки и картинку")
     }
 
+    //region handlers
     private fun handleCameraPermissionFromChooseImageDialog(granted: Boolean) {
         when {
             granted -> {
@@ -168,8 +172,18 @@ class EditProfileActivity : AppCompatActivity() {
         Log.d("debug_granted", "handleCameraPermissionAfterSettingsActivity: granted: $granted")
         if (!granted) requirementDialog.show()
         else imageView.setImageDrawable(getDrawableById(R.drawable.cat))
-
     }
+
+    private fun handleLaunchSettings(activityResult: ActivityResult) {
+        Log.d("debug_granted", "Callback launcherSettings.")
+        permissionCameraAfterSettingsActivity.launch(Manifest.permission.CAMERA)
+    }
+    //endregion
+
+    private val launcherSettings = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+        ::handleLaunchSettings
+    )
 
     private fun isCameraForbidden(): Boolean =
         !shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
@@ -200,7 +214,7 @@ class EditProfileActivity : AppCompatActivity() {
         Log.d("debug_granted", "onPositiveChooseImageDialogListenerClick")
         when (currentItemsWhichChooseImageDialog) {
             0 -> permissionCameraFromChooseImageDialog.launch(Manifest.permission.CAMERA)
-            1 -> print("todo") //todo
+            1 -> takePictureUri.launch("image/*")
         }
         dialog?.dismiss()
     }
