@@ -3,6 +3,7 @@ package otus.gpb.homework.activities
 import android.Manifest
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -12,6 +13,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
@@ -25,7 +27,36 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 class EditProfileActivity : AppCompatActivity() {
 
     private lateinit var imageView: ImageView
+    private var currentItemsWhichChooseImageDialog = -1
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_edit_profile)
+        imageView = findViewById(R.id.imageview_photo)
+        imageView.setOnClickListener { chooseImageDialog.show() }
+
+        findViewById<Toolbar>(R.id.toolbar).apply {
+            inflateMenu(R.menu.menu)
+            setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.send_item -> {
+                        openSenderApp()
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+        }
+    }
+    private val chooseImageDialogItems by lazy {
+        arrayOf(
+            resources.getString(R.string.choose_dialog_create_photo),
+            resources.getString(R.string.choose_dialog_choose_photo)
+        )
+    }
+
+    //region activity results
     private val permissionCameraFromChooseImageDialog = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
         ::handleCameraPermissionFromChooseImageDialog
@@ -37,22 +68,20 @@ class EditProfileActivity : AppCompatActivity() {
     )
 
     private val takePictureUri = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { image: Uri? ->
-        Log.d("debug_granted", "Callback takePictureUri. uri: $image")
-        image?.let {
-            populateImage(image)
-        }
-    }
+        ActivityResultContracts.GetContent(),
+        ::handleTakePictureUri
+    )
 
-    private var currentItemsWhichChooseImageDialog = -1
+    private val takePictures = registerForActivityResult(
+        ActivityResultContracts.TakePicturePreview(),
+        ::handleTakePictures
+    )
 
-    private val chooseImageDialogItems by lazy {
-        arrayOf(
-            resources.getString(R.string.choose_dialog_create_photo),
-            resources.getString(R.string.choose_dialog_choose_photo)
-        )
-    }
+    private val launcherSettings = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+        ::handleLaunchSettings
+    )
+    //endregion
 
     //region dialogs
     val chooseImageDialog: AlertDialog
@@ -114,44 +143,11 @@ class EditProfileActivity : AppCompatActivity() {
         }
     //endregion
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_edit_profile)
-        imageView = findViewById(R.id.imageview_photo)
-        imageView.setOnClickListener { chooseImageDialog.show() }
-
-        findViewById<Toolbar>(R.id.toolbar).apply {
-            inflateMenu(R.menu.menu)
-            setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.send_item -> {
-                        openSenderApp()
-                        true
-                    }
-
-                    else -> false
-                }
-            }
-        }
-    }
-
-    /**
-     * Используйте этот метод чтобы отобразить картинку полученную из медиатеки в ImageView
-     */
-    private fun populateImage(uri: Uri) {
-        val bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(uri))
-        imageView.setImageBitmap(bitmap)
-    }
-
-    private fun openSenderApp() {
-        TODO("В качестве реализации метода отправьте неявный Intent чтобы поделиться профилем. В качестве extras передайте заполненные строки и картинку")
-    }
-
     //region handlers
     private fun handleCameraPermissionFromChooseImageDialog(granted: Boolean) {
         when {
             granted -> {
-                imageView.setImageDrawable(getDrawableById(R.drawable.cat))
+                setCameraImage()
                 Log.d("debug_granted", "handleCameraPermissionFromChooseImageDialog: granted")
                 Toast.makeText(this, "Доступ к камере предоставлен", Toast.LENGTH_SHORT).show()
             }
@@ -171,31 +167,28 @@ class EditProfileActivity : AppCompatActivity() {
     private fun handleCameraPermissionAfterSettingsActivity(granted: Boolean) {
         Log.d("debug_granted", "handleCameraPermissionAfterSettingsActivity: granted: $granted")
         if (!granted) requirementDialog.show()
-        else imageView.setImageDrawable(getDrawableById(R.drawable.cat))
+        else setCameraImage()
     }
+
 
     private fun handleLaunchSettings(activityResult: ActivityResult) {
         Log.d("debug_granted", "Callback launcherSettings.")
         permissionCameraAfterSettingsActivity.launch(Manifest.permission.CAMERA)
     }
+
+    private fun handleTakePictures(image: Bitmap?) {
+        Log.d("debug_granted", "Callback takePictures. image: $image")
+        if (image != null) imageView.setImageBitmap(image)
+        else imageView.setImageDrawable(getDrawableById(R.drawable.cat))
+    }
+
+    private fun handleTakePictureUri(image: Uri?) {
+        Log.d("debug_granted", "Callback takePictureUri. uri: $image")
+        image?.let {
+            populateImage(image)
+        }
+    }
     //endregion
-
-    private val launcherSettings = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult(),
-        ::handleLaunchSettings
-    )
-
-    private fun isCameraForbidden(): Boolean =
-        !shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
-
-    /**
-     * Получает ресурс drawable по его идентификатору.
-     *
-     * @param imageId идентификатор ресурса drawable для получения
-     * @return ресурс drawable, связанный с данным идентификатором, или null, если не найден
-     */
-    private fun getDrawableById(imageId: Int) =
-        AppCompatResources.getDrawable(this, imageId)
 
     //region listeners
     private fun rationaleDialogInClickListener(dialog: DialogInterface?, which: Int) {
@@ -219,6 +212,36 @@ class EditProfileActivity : AppCompatActivity() {
         dialog?.dismiss()
     }
     //endregion
+
+    // region image settings
+    /**
+     * Используйте этот метод чтобы отобразить картинку полученную из медиатеки в ImageView
+     */
+    private fun populateImage(uri: Uri) {
+        val bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(uri))
+        imageView.setImageBitmap(bitmap)
+    }
+
+    private fun setCameraImage() {
+        takePictures.launch()
+    }
+
+    /**
+     * Получает ресурс drawable по его идентификатору.
+     *
+     * @param imageId идентификатор ресурса drawable для получения
+     * @return ресурс drawable, связанный с данным идентификатором, или null, если не найден
+     */
+    private fun getDrawableById(imageId: Int) =
+        AppCompatResources.getDrawable(this, imageId)
+    //endregion
+
+    private fun openSenderApp() {
+        TODO("В качестве реализации метода отправьте неявный Intent чтобы поделиться профилем. В качестве extras передайте заполненные строки и картинку")
+    }
+
+    private fun isCameraForbidden(): Boolean =
+        !shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
 
     fun startSettingsActivity() {
         Log.d("debug_granted", "startSettingsActivity")
