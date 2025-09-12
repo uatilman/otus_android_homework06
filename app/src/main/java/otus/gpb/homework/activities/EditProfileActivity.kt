@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,69 +25,97 @@ class EditProfileActivity : AppCompatActivity() {
 
     private lateinit var imageView: ImageView
 
-    private val permissionCamera = registerForActivityResult(
+    private val permissionCameraFromChooseImageDialog = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
-        ::handleCameraPermission
+        ::handleCameraPermissionFromChooseImageDialog
+    )
+
+    private val permissionCameraAfterSettingsActivity = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+        ::handleCameraPermissionAfterSettingsActivity
     )
 
     private val launcherSettings = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { _ ->
-        if (isCameraForbidden())
-            requirementDialog.show()
+        Log.d("debug_granted", "Callback launcherSettings.")
+        permissionCameraAfterSettingsActivity.launch(Manifest.permission.CAMERA)
     }
 
+    private var currentItemsWhichChooseImageDialog = -1
 
-    private var currentItemsWhichChooseImageMethodDialog = -1
-
-    private val chooseImageMethodDialogItems by lazy {
+    private val chooseImageDialogItems by lazy {
         arrayOf(
             resources.getString(R.string.choose_dialog_create_photo),
             resources.getString(R.string.choose_dialog_choose_photo)
         )
     }
-    val chooseImageMethodDialog: AlertDialog by lazy {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.choose_dialog_title)
-            .setSingleChoiceItems(chooseImageMethodDialogItems, -1) { _, which ->
-                currentItemsWhichChooseImageMethodDialog = which
-            }
-            .setPositiveButton(
-                R.string.choose_dialog_ok,
-                ::onPositiveChooseImageMethodDialogListenerClick
-            )
-        .setNegativeButton(R.string.choose_dialog_canceled) { dialog, _ ->
-            currentItemsWhichChooseImageMethodDialog = -1
-            dialog.dismiss()
-        }
+
+    //region dialogs
+    val chooseImageDialog: AlertDialog
+        get() {
+            Log.d("debug_granted", "chooseImageDialog getter.")
+            return MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.choose_dialog_title)
+                .setSingleChoiceItems(chooseImageDialogItems, -1) { _, which ->
+                    currentItemsWhichChooseImageDialog = which
+                }
+                .setPositiveButton(
+                    R.string.choose_dialog_ok,
+                    ::onPositiveChooseImageDialogListenerClick
+                )
+                .setNegativeButton(R.string.choose_dialog_canceled) { dialog, _ ->
+                    Log.d("debug_granted", "chooseImageDialog onNegativeButtonClickListener.")
+                    dialog.dismiss()
+                }
                 .setOnDismissListener {
-            currentItemsWhichChooseImageMethodDialog = -1
+                    Log.d("debug_granted", "chooseImageDialog onDismissListener.")
+                    currentItemsWhichChooseImageDialog = -1
+                }
+                .create()
         }
-                 .create()
-    }
 
-    val rationaleDialog: AlertDialog by lazy {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.rationale_dialog_title))
-            .setMessage(getString(R.string.rationale_dialog_message))
-            .setPositiveButton(R.string.rationale_dialog_button_ok, ::startSettingsActivity)
-            .setNegativeButton(R.string.rationale_dialog_button_canceled) { _, _ -> }
-            .create()
-    }
-    val requirementDialog: AlertDialog by lazy {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.rationale_dialog_title))
-            .setMessage(getString(R.string.rationale_dialog_message))
-            .setPositiveButton(R.string.rationale_dialog_button_ok, ::startSettingsActivity)
-            .create()
-    }
+    val rationaleDialog: AlertDialog
+        get() {
+            Log.d("debug_granted", "rationaleDialog getter.")
+            return MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.rationale_dialog_title))
+                .setMessage(getString(R.string.rationale_dialog_message))
+                .setPositiveButton(
+                    R.string.rationale_dialog_button_ok,
+                    ::rationaleDialogInClickListener
+                )
+                .setNegativeButton(R.string.rationale_dialog_button_canceled) { _, _ ->
+                    Log.d("debug_granted", "rationaleDialog onNegativeButtonClickListener.")
+                }
+                .setOnDismissListener {
+                    Log.d("debug_granted", "rationaleDialog onDismissListener.")
+                }
+                .create()
+        }
 
+    val requirementDialog: AlertDialog
+        get() {
+            Log.d("debug_granted", "requirementDialog getter.")
+            return MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.rationale_dialog_title))
+                .setMessage(getString(R.string.rationale_dialog_message))
+                .setPositiveButton(
+                    R.string.rationale_dialog_button_ok,
+                    ::requirementDialogInClickListener
+                )
+                .setOnDismissListener {
+                    Log.d("debug_granted", "requirementDialog onDismissListener.")
+                }
+                .create()
+        }
+    //endregion
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_profile)
         imageView = findViewById(R.id.imageview_photo)
-        imageView.setOnClickListener { chooseImageMethodDialog.show() }
+        imageView.setOnClickListener { chooseImageDialog.show() }
 
         findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu)
@@ -103,7 +132,6 @@ class EditProfileActivity : AppCompatActivity() {
         }
     }
 
-
     /**
      * Используйте этот метод чтобы отобразить картинку полученную из медиатеки в ImageView
      */
@@ -116,23 +144,32 @@ class EditProfileActivity : AppCompatActivity() {
         TODO("В качестве реализации метода отправьте неявный Intent чтобы поделиться профилем. В качестве extras передайте заполненные строки и картинку")
     }
 
-    private fun handleCameraPermission(granted: Boolean) {
+    private fun handleCameraPermissionFromChooseImageDialog(granted: Boolean) {
         when {
             granted -> {
                 imageView.setImageDrawable(getDrawableById(R.drawable.cat))
+                Log.d("debug_granted", "handleCameraPermissionFromChooseImageDialog: granted")
                 Toast.makeText(this, "Доступ к камере предоставлен", Toast.LENGTH_SHORT).show()
             }
+            // доступ к камере запрещен, пользователь поставил галочку Don't ask again.
             isCameraForbidden() -> {
-                // доступ к камере запрещен, пользователь поставил галочку Don't ask again.
+                Log.d("debug_granted", "camera forbidden")
                 rationaleDialog.show()
             }
+            // доступ к камере запрещен, пользователь отклонил запрос
             else -> {
-                // доступ к камере запрещен, пользователь отклонил запрос
+                Log.d("debug_granted", "camera denied")
                 Toast.makeText(this, "Потом попробуешь еще раз", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    private fun handleCameraPermissionAfterSettingsActivity(granted: Boolean) {
+        Log.d("debug_granted", "handleCameraPermissionAfterSettingsActivity: granted: $granted")
+        if (!granted) requirementDialog.show()
+        else imageView.setImageDrawable(getDrawableById(R.drawable.cat))
+
+    }
 
     private fun isCameraForbidden(): Boolean =
         !shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
@@ -146,7 +183,31 @@ class EditProfileActivity : AppCompatActivity() {
     private fun getDrawableById(imageId: Int) =
         AppCompatResources.getDrawable(this, imageId)
 
-    fun startSettingsActivity(dialog: DialogInterface?, which: Int) {
+    //region listeners
+    private fun rationaleDialogInClickListener(dialog: DialogInterface?, which: Int) {
+        Log.d("debug_granted", "rationaleDialogInClickListener")
+        startSettingsActivity()
+        dialog?.dismiss()
+    }
+
+    private fun requirementDialogInClickListener(dialog: DialogInterface?, which: Int) {
+        Log.d("debug_granted", "requirementDialogInClickListener")
+        startSettingsActivity()
+        dialog?.dismiss()
+    }
+
+    fun onPositiveChooseImageDialogListenerClick(dialog: DialogInterface?, which: Int) {
+        Log.d("debug_granted", "onPositiveChooseImageDialogListenerClick")
+        when (currentItemsWhichChooseImageDialog) {
+            0 -> permissionCameraFromChooseImageDialog.launch(Manifest.permission.CAMERA)
+            1 -> print("todo") //todo
+        }
+        dialog?.dismiss()
+    }
+    //endregion
+
+    fun startSettingsActivity() {
+        Log.d("debug_granted", "startSettingsActivity")
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
             data = Uri.fromParts("package", packageName, null)
             // если в новом потоке, то ResultApi не дожидается результат
@@ -154,13 +215,4 @@ class EditProfileActivity : AppCompatActivity() {
         }
         launcherSettings.launch(intent)
     }
-
-    fun onPositiveChooseImageMethodDialogListenerClick(dialog: DialogInterface?, which: Int) {
-        when (currentItemsWhichChooseImageMethodDialog) {
-            0 -> permissionCamera.launch(Manifest.permission.CAMERA)
-            1 -> print("todo") //todo
-        }
-        dialog?.dismiss()
-    }
-
 }
