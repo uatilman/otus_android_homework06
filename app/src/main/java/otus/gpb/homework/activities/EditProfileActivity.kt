@@ -9,7 +9,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,6 +21,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import otus.gpb.homework.contracts.ContractForFillFormActivity
+import otus.gpb.homework.model.User
 
 /**
  * Полезная статья по разрешениям [shouldShowRequestPermissionRationale] и
@@ -26,14 +30,33 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
  */
 class EditProfileActivity : AppCompatActivity() {
 
-    private lateinit var imageView: ImageView
+    //region elementsById
+    private val chooseImageDialogItems by lazy {
+        arrayOf(
+            resources.getString(R.string.choose_dialog_create_photo),
+            resources.getString(R.string.choose_dialog_choose_photo)
+        )
+    }
+
+    private val imageView by lazy { findViewById<ImageView>(R.id.imageview_photo) }
+
+    private val editProfileButton by lazy { findViewById<Button>(R.id.edit_profile_button) }
+
+    private val firstName by lazy { findViewById<TextView>(R.id.textview_first_name) }
+    private val lastName by lazy { findViewById<TextView>(R.id.textview_last_name) }
+    private val age by lazy { findViewById<TextView>(R.id.textview_age) }
+
+    //endregion
     private var currentItemsWhichChooseImageDialog = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_profile)
-        imageView = findViewById(R.id.imageview_photo)
+
         imageView.setOnClickListener { chooseImageDialog.show() }
+        editProfileButton.setOnClickListener {
+            openFillProfileIntent()
+        }
 
         findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu)
@@ -48,12 +71,6 @@ class EditProfileActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-    private val chooseImageDialogItems by lazy {
-        arrayOf(
-            resources.getString(R.string.choose_dialog_create_photo),
-            resources.getString(R.string.choose_dialog_choose_photo)
-        )
     }
 
     //region activity results
@@ -80,6 +97,11 @@ class EditProfileActivity : AppCompatActivity() {
     private val launcherSettings = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
         ::handleLaunchSettings
+    )
+
+    private val fillProfileActivity = registerForActivityResult(
+        ContractForFillFormActivity(),
+        ::handleFillProfileActivity
     )
     //endregion
 
@@ -188,6 +210,15 @@ class EditProfileActivity : AppCompatActivity() {
             populateImage(image)
         }
     }
+
+    fun handleFillProfileActivity(user: User?) {
+        Log.d("debug_granted", "fillProfileActivity result: $user")
+        user?.let {
+            firstName.text = user.firstName
+            lastName.text = user.lastName
+            age.text = user.age.toString()
+        }
+    }
     //endregion
 
     //region listeners
@@ -210,6 +241,17 @@ class EditProfileActivity : AppCompatActivity() {
             1 -> takePictureUri.launch("image/*")
         }
         dialog?.dismiss()
+    }
+
+    fun openFillProfileIntent() = Intent(this, FillFormActivity::class.java).apply {
+        val ageValue = age.text.toString()
+        fillProfileActivity.launch(
+            User(
+                firstName.text.toString(),
+                lastName.text.toString(),
+                if (ageValue == "") 0 else runCatching { ageValue.toInt() }.getOrDefault(0)
+            )
+        )
     }
     //endregion
 
