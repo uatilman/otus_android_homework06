@@ -23,6 +23,7 @@ import androidx.appcompat.widget.Toolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import otus.gpb.homework.contracts.ContractForFillFormActivity
 import otus.gpb.homework.model.User
+import androidx.core.net.toUri
 
 /**
  * Полезная статья по разрешениям [shouldShowRequestPermissionRationale] и
@@ -48,6 +49,8 @@ class EditProfileActivity : AppCompatActivity() {
 
     //endregion
     private var currentItemsWhichChooseImageDialog = -1
+
+    private var imageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -207,6 +210,7 @@ class EditProfileActivity : AppCompatActivity() {
     private fun handleTakePictureUri(image: Uri?) {
         Log.d("debug_granted", "Callback takePictureUri. uri: $image")
         image?.let {
+            this.imageUri = image
             populateImage(image)
         }
     }
@@ -279,7 +283,39 @@ class EditProfileActivity : AppCompatActivity() {
     //endregion
 
     private fun openSenderApp() {
-        TODO("В качестве реализации метода отправьте неявный Intent чтобы поделиться профилем. В качестве extras передайте заполненные строки и картинку")
+        val telegramIntent = Intent(Intent.ACTION_SEND).apply {
+            setPackage("org.telegram.messenger")
+            setType("text/plain")
+            val message = """
+                ${firstName.text} 
+                ${lastName.text}
+                ${age.text}
+            """.trimIndent()
+            if (message.isBlank()) {
+                Toast.makeText(
+                    this@EditProfileActivity,
+                    "Сначала введите свои данные",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return
+            }
+            putExtra(
+                Intent.EXTRA_TEXT,
+                message
+            )
+            imageUri?.let {
+                putExtra(Intent.EXTRA_STREAM, it)
+            }
+
+        }
+
+        runCatching {
+            startActivity(telegramIntent)
+            Log.d("debug_granted", "openSenderApp: success")
+        }.getOrElse {
+            Toast.makeText(this, "Похоже Telegram не установлен", Toast.LENGTH_SHORT).show();
+            Log.e("debug_granted", "openSenderApp failed to start Telegram : ${it.message}", it)
+        }
     }
 
     private fun isCameraForbidden(): Boolean =
@@ -289,8 +325,6 @@ class EditProfileActivity : AppCompatActivity() {
         Log.d("debug_granted", "startSettingsActivity")
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
             data = Uri.fromParts("package", packageName, null)
-            // если в новом потоке, то ResultApi не дожидается результат
-//            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         launcherSettings.launch(intent)
     }
