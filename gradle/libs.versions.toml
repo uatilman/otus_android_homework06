@@ -1,17 +1,17 @@
 [versions]
-android-activity = "1.9.0"
-android-appcompat = "1.6.1"
-android-constraintlayout = "2.1.4"
-android-core = "1.13.1"
-android-fragment = "1.7.1"
+android-activity = "1.11.0"
+android-appcompat = "1.7.1"
+android-constraintlayout = "2.2.1"
+android-core = "1.17.0"
+android-fragment = "1.8.9"
 
-material = "1.12.0"
+material = "1.13.0"
 picasso = "2.71828"
 
-android-application = "8.4.0"
-android-library = "8.4.0"
-kotlin-android = "1.9.23"
-detekt = "1.21.0"
+android-application = "8.13.0"
+android-library = "8.13.0"
+kotlin-android = "2.2.20"
+detekt = "1.23.8"
 
 [libraries]
 androidx-activity = { group = "androidx.activity", name = "activity-ktx", version.ref = "android-activity" }
